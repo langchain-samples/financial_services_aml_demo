@@ -14,6 +14,7 @@ from load_generator.transaction_generator import TransactionGenerator
 from agents.kyc_agent import KYCAgent
 from agents.aml_agent import AMLAgent
 from utils.langsmith_setup import get_kyc_project_name, get_aml_project_name
+from app.routes.reviews import add_pending_review
 
 router = APIRouter(prefix="/load", tags=["Load Generation"])
 
@@ -36,7 +37,27 @@ async def process_customer_async(customer, kyc_agent_instance):
 async def process_transaction_async(transaction, aml_agent_instance):
     """Process a single transaction through AML."""
     try:
-        aml_agent_instance.analyze_transaction(transaction)
+        alert = aml_agent_instance.analyze_transaction(transaction)
+        
+        # If alert is generated (anomalies detected), add to pending reviews
+        if alert:
+            # Determine severity from alert
+            severity_map = {
+                "CRITICAL": "HIGH",
+                "HIGH": "HIGH",
+                "MEDIUM": "MEDIUM",
+                "LOW": "LOW",
+            }
+            severity = severity_map.get(alert.severity, "MEDIUM")
+            
+            # Get anomaly details from the alert
+            anomalies = {
+                "anomalies_detected": True,
+                "anomaly_types": alert.indicators or [],
+                "severity": severity,
+                "details": alert.justification or f"Risk score: {alert.risk_score}",
+            }
+            add_pending_review(transaction, anomalies, alert)
     except Exception as e:
         print(f"Error processing transaction {transaction.transaction_id}: {e}")
 
@@ -112,6 +133,7 @@ async def generate_transaction_load(
 async def generate_anomaly_transaction_load(
     anomaly_type: str = Query("sanctions", description="Type of anomaly: sanctions, structuring, large_amount, high_risk_jurisdiction"),
     customer_id: str = Query(None, description="Customer ID (auto-generated if not provided)"),
+    process: bool = Query(False, description="Process transactions through AML and create reviews"),
     background_tasks: BackgroundTasks = BackgroundTasks(),
 ) -> LoadTransactionsResponse:
     """Generate transactions specifically designed to trigger anomalies for human review.
@@ -122,6 +144,7 @@ async def generate_anomaly_transaction_load(
             - "structuring": Multiple small transactions under $10k threshold
             - "large_amount": Very large transaction (>$50k)
             - "high_risk_jurisdiction": Transaction to high-risk country
+        process: If True, process transactions through AML and create reviews in the frontend
     """
     try:
         import uuid
@@ -144,15 +167,23 @@ async def generate_anomaly_transaction_load(
             )
             transactions = [transaction]
 
-        # Note: These transactions are designed for testing in LangGraph Studio
-        # where you can interactively test the human-in-the-loop interrupt
-        # They are NOT processed through the function-based agent here
+        # Optionally process transactions through AML to create reviews
+        if process:
+            for transaction in transactions:
+                background_tasks.add_task(
+                    process_transaction_async,
+                    transaction,
+                    aml_agent,
+                )
+            message = f"Generated {len(transactions)} anomaly transaction(s) of type '{anomaly_type}' and queued for AML processing. Reviews will appear in the frontend."
+        else:
+            message = f"Generated {len(transactions)} anomaly transaction(s) of type '{anomaly_type}'. Use these in LangGraph Studio to test human-in-the-loop review, or set process=true to create reviews in the frontend."
 
         return LoadTransactionsResponse(
             success=True,
             transactions_generated=len(transactions),
             transactions=transactions,
-            message=f"Generated {len(transactions)} anomaly transaction(s) of type '{anomaly_type}'. Use these in LangGraph Studio to test human-in-the-loop review.",
+            message=message,
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Anomaly transaction generation failed: {str(e)}")
