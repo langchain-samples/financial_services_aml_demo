@@ -1,19 +1,21 @@
 """AML Review management API routes."""
 
 from typing import Dict, List, Optional
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from langsmith import traceable
+from utils.trace_context import get_trace_context
 from pydantic import BaseModel
 from datetime import datetime
+from sqlalchemy.orm import Session
+from sqlalchemy import desc
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 
 from agents.aml_agent import Transaction, Alert
+from app.database import get_db
+from app.models_db import AMLReview
 
 router = APIRouter(prefix="/aml/reviews", tags=["AML Reviews"])
-
-# In-memory store for pending reviews (in production, use a database)
-pending_reviews: Dict[str, Dict] = {}
 
 
 class ReviewResponse(BaseModel):
@@ -31,71 +33,103 @@ class ReviewsListResponse(BaseModel):
 
 
 @router.get("/pending", response_model=ReviewsListResponse)
-@traceable(name="get_pending_reviews", project_name="financial_services_deep_agent_demo")
-async def get_pending_reviews() -> ReviewsListResponse:
+async def get_pending_reviews(db: Session = Depends(get_db)) -> ReviewsListResponse:
     """Get all pending AML transaction reviews."""
-    # Filter pending reviews
-    pending = [
-        review for review in pending_reviews.values()
-        if review.get("status") == "pending"
-    ]
+    # Query pending reviews from database
+    pending_reviews = db.query(AMLReview).filter(
+        AMLReview.status == "pending"
+    ).order_by(desc(AMLReview.timestamp)).all()
     
-    # Sort by timestamp (newest first)
-    pending.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+    # Convert to dict format
+    reviews_list = [review.to_dict() for review in pending_reviews]
     
     return ReviewsListResponse(
         success=True,
-        reviews=pending,
-        count=len(pending),
+        reviews=reviews_list,
+        count=len(reviews_list),
+    )
+
+
+@router.get("/all", response_model=ReviewsListResponse)
+async def get_all_reviews(
+    status: Optional[str] = None,
+    db: Session = Depends(get_db)
+) -> ReviewsListResponse:
+    """Get all reviews, optionally filtered by status."""
+    query = db.query(AMLReview)
+    
+    if status:
+        query = query.filter(AMLReview.status == status)
+    
+    reviews = query.order_by(desc(AMLReview.timestamp)).all()
+    reviews_list = [review.to_dict() for review in reviews]
+    
+    return ReviewsListResponse(
+        success=True,
+        reviews=reviews_list,
+        count=len(reviews_list),
     )
 
 
 @router.get("/{transaction_id}", response_model=ReviewResponse)
-@traceable(name="get_review", project_name="financial_services_deep_agent_demo")
-async def get_review(transaction_id: str) -> ReviewResponse:
+async def get_review(transaction_id: str, db: Session = Depends(get_db)) -> ReviewResponse:
     """Get a specific review by transaction ID."""
-    if transaction_id not in pending_reviews:
+    review = db.query(AMLReview).filter(
+        AMLReview.transaction_id == transaction_id
+    ).first()
+    
+    if not review:
         raise HTTPException(status_code=404, detail="Review not found")
     
     return ReviewResponse(
         success=True,
         message="Review retrieved",
-        review=pending_reviews[transaction_id],
+        review=review.to_dict(),
     )
 
 
 @router.post("/{transaction_id}/approve", response_model=ReviewResponse)
-@traceable(name="approve_review", project_name="financial_services_deep_agent_demo", run_type="chain")
-async def approve_review(transaction_id: str) -> ReviewResponse:
+@traceable(name="approve_review", project_name="financial_services_deep_agent_demo", metadata=get_trace_context("aml_review_actions"), run_type="chain")
+async def approve_review(transaction_id: str, db: Session = Depends(get_db)) -> ReviewResponse:
     """Approve a pending AML transaction review with deep tracing."""
-    if transaction_id not in pending_reviews:
+    review = db.query(AMLReview).filter(
+        AMLReview.transaction_id == transaction_id
+    ).first()
+    
+    if not review:
         raise HTTPException(status_code=404, detail="Review not found")
     
-    review = pending_reviews[transaction_id]
-    if review.get("status") != "pending":
+    if review.status != "pending":
         raise HTTPException(status_code=400, detail="Review is not pending")
     
+    # Convert to dict for helper functions
+    review_dict = review.to_dict()
+    
     # Step 1: Validate review eligibility (nested trace)
-    validation_result = _validate_review_eligibility(review)
+    validation_result = _validate_review_eligibility(review_dict)
     
     # Step 2: Generate review justification using LLM (nested trace)
-    justification = _generate_review_justification(review, "APPROVE")
+    justification = _generate_review_justification(review_dict, "APPROVE")
     
     # Step 3: Perform compliance check (nested trace)
-    compliance_result = _perform_compliance_check(review, "APPROVE")
+    compliance_result = _perform_compliance_check(review_dict, "APPROVE")
     
-    # Step 4: Update review status
-    review["status"] = "approved"
-    review["reviewed_at"] = datetime.now().isoformat()
-    review["review_action"] = "APPROVE"
-    review["justification"] = justification
-    review["compliance_check"] = compliance_result
+    # Step 4: Update review status in database
+    review.status = "approved"
+    review.reviewed_at = datetime.now()
+    review.review_action = "APPROVE"
+    review.justification = justification
+    import json
+    review.compliance_check = json.dumps(compliance_result)
+    
+    db.commit()
+    db.refresh(review)
     
     # Step 5: Log review action (nested trace)
-    _log_review_action(review, "APPROVE")
+    _log_review_action(review.to_dict(), "APPROVE")
     
     # If this is a LangGraph thread, resume with APPROVE
-    thread_id = review.get("thread_id")
+    thread_id = review.thread_id
     if thread_id:
         try:
             from langgraph.checkpoint.memory import MemorySaver
@@ -108,7 +142,7 @@ async def approve_review(transaction_id: str) -> ReviewResponse:
     return ReviewResponse(
         success=True,
         message="Review approved",
-        review=review,
+        review=review.to_dict(),
     )
 
 
@@ -211,37 +245,47 @@ def _log_review_action(review: Dict, action: str) -> Dict:
 
 
 @router.post("/{transaction_id}/reject", response_model=ReviewResponse)
-@traceable(name="reject_review", project_name="financial_services_deep_agent_demo", run_type="chain")
-async def reject_review(transaction_id: str) -> ReviewResponse:
+@traceable(name="reject_review", project_name="financial_services_deep_agent_demo", metadata=get_trace_context("aml_review_actions"), run_type="chain")
+async def reject_review(transaction_id: str, db: Session = Depends(get_db)) -> ReviewResponse:
     """Reject a pending AML transaction review with deep tracing."""
-    if transaction_id not in pending_reviews:
+    review = db.query(AMLReview).filter(
+        AMLReview.transaction_id == transaction_id
+    ).first()
+    
+    if not review:
         raise HTTPException(status_code=404, detail="Review not found")
     
-    review = pending_reviews[transaction_id]
-    if review.get("status") != "pending":
+    if review.status != "pending":
         raise HTTPException(status_code=400, detail="Review is not pending")
     
+    # Convert to dict for helper functions
+    review_dict = review.to_dict()
+    
     # Step 1: Validate review eligibility (nested trace)
-    validation_result = _validate_review_eligibility(review)
+    validation_result = _validate_review_eligibility(review_dict)
     
     # Step 2: Generate review justification using LLM (nested trace)
-    justification = _generate_review_justification(review, "REJECT")
+    justification = _generate_review_justification(review_dict, "REJECT")
     
     # Step 3: Perform compliance check (nested trace)
-    compliance_result = _perform_compliance_check(review, "REJECT")
+    compliance_result = _perform_compliance_check(review_dict, "REJECT")
     
-    # Step 4: Update review status
-    review["status"] = "rejected"
-    review["reviewed_at"] = datetime.now().isoformat()
-    review["review_action"] = "REJECT"
-    review["justification"] = justification
-    review["compliance_check"] = compliance_result
+    # Step 4: Update review status in database
+    review.status = "rejected"
+    review.reviewed_at = datetime.now()
+    review.review_action = "REJECT"
+    review.justification = justification
+    import json
+    review.compliance_check = json.dumps(compliance_result)
+    
+    db.commit()
+    db.refresh(review)
     
     # Step 5: Log review action (nested trace)
-    _log_review_action(review, "REJECT")
+    _log_review_action(review.to_dict(), "REJECT")
     
     # If this is a LangGraph thread, resume with REJECT
-    thread_id = review.get("thread_id")
+    thread_id = review.thread_id
     if thread_id:
         try:
             # Resume the graph with REJECT decision
@@ -252,46 +296,56 @@ async def reject_review(transaction_id: str) -> ReviewResponse:
     return ReviewResponse(
         success=True,
         message="Review rejected",
-        review=review,
+        review=review.to_dict(),
     )
 
 
 @router.post("/{transaction_id}/escalate", response_model=ReviewResponse)
-@traceable(name="escalate_review", project_name="financial_services_deep_agent_demo", run_type="chain")
-async def escalate_review(transaction_id: str) -> ReviewResponse:
+@traceable(name="escalate_review", project_name="financial_services_deep_agent_demo", metadata=get_trace_context("aml_review_actions"), run_type="chain")
+async def escalate_review(transaction_id: str, db: Session = Depends(get_db)) -> ReviewResponse:
     """Escalate a pending AML transaction review with deep tracing."""
-    if transaction_id not in pending_reviews:
+    review = db.query(AMLReview).filter(
+        AMLReview.transaction_id == transaction_id
+    ).first()
+    
+    if not review:
         raise HTTPException(status_code=404, detail="Review not found")
     
-    review = pending_reviews[transaction_id]
-    if review.get("status") != "pending":
+    if review.status != "pending":
         raise HTTPException(status_code=400, detail="Review is not pending")
     
+    # Convert to dict for helper functions
+    review_dict = review.to_dict()
+    
     # Step 1: Validate review eligibility (nested trace)
-    validation_result = _validate_review_eligibility(review)
+    validation_result = _validate_review_eligibility(review_dict)
     
     # Step 2: Generate escalation rationale using LLM (nested trace)
-    justification = _generate_review_justification(review, "ESCALATE")
+    justification = _generate_review_justification(review_dict, "ESCALATE")
     
     # Step 3: Perform compliance check (nested trace)
-    compliance_result = _perform_compliance_check(review, "ESCALATE")
+    compliance_result = _perform_compliance_check(review_dict, "ESCALATE")
     
     # Step 4: Determine escalation priority (nested trace with LLM)
-    escalation_priority = _determine_escalation_priority(review)
+    escalation_priority = _determine_escalation_priority(review_dict)
     
-    # Step 5: Update review status
-    review["status"] = "escalated"
-    review["reviewed_at"] = datetime.now().isoformat()
-    review["review_action"] = "ESCALATE"
-    review["justification"] = justification
-    review["compliance_check"] = compliance_result
-    review["escalation_priority"] = escalation_priority
+    # Step 5: Update review status in database
+    review.status = "escalated"
+    review.reviewed_at = datetime.now()
+    review.review_action = "ESCALATE"
+    review.justification = justification
+    import json
+    review.compliance_check = json.dumps(compliance_result)
+    review.escalation_priority = escalation_priority.get("priority", "MEDIUM")
+    
+    db.commit()
+    db.refresh(review)
     
     # Step 6: Log review action (nested trace)
-    _log_review_action(review, "ESCALATE")
+    _log_review_action(review.to_dict(), "ESCALATE")
     
     # If this is a LangGraph thread, resume with ESCALATE
-    thread_id = review.get("thread_id")
+    thread_id = review.thread_id
     if thread_id:
         try:
             # Resume the graph with ESCALATE decision
@@ -302,7 +356,7 @@ async def escalate_review(transaction_id: str) -> ReviewResponse:
     return ReviewResponse(
         success=True,
         message="Review escalated",
-        review=review,
+        review=review.to_dict(),
     )
 
 
@@ -345,8 +399,10 @@ Determine the escalation priority and provide a brief reason.""")
 
 
 def add_pending_review(transaction: Transaction, anomalies: Dict, alert: Optional[Alert] = None, thread_id: Optional[str] = None):
-    """Add a review to the pending reviews store."""
-    review = {
+    """Add a review to the database."""
+    from app.database import get_db_session
+    
+    review_data = {
         "transaction_id": transaction.transaction_id,
         "customer_id": transaction.customer_id,
         "amount": transaction.amount,
@@ -354,7 +410,7 @@ def add_pending_review(transaction: Transaction, anomalies: Dict, alert: Optiona
         "origin": transaction.origin,
         "destination": transaction.destination,
         "transaction_type": transaction.transaction_type,
-        "timestamp": transaction.timestamp.isoformat() if isinstance(transaction.timestamp, datetime) else transaction.timestamp,
+        "timestamp": transaction.timestamp if isinstance(transaction.timestamp, datetime) else datetime.fromisoformat(transaction.timestamp) if isinstance(transaction.timestamp, str) else datetime.now(),
         "description": transaction.description,
         "anomalies": {
             "anomalies_detected": anomalies.get("anomalies_detected", False),
@@ -366,8 +422,36 @@ def add_pending_review(transaction: Transaction, anomalies: Dict, alert: Optiona
         "alert_id": alert.alert_id if alert else None,
         "status": "pending",
         "thread_id": thread_id,
-        "created_at": datetime.now().isoformat(),
     }
     
-    pending_reviews[transaction.transaction_id] = review
-    return review
+    # Use database session to save review
+    with get_db_session() as db:
+        # Check if review already exists
+        existing = db.query(AMLReview).filter(
+            AMLReview.transaction_id == transaction.transaction_id
+        ).first()
+        
+        if existing:
+            # Update existing review
+            for key, value in review_data.items():
+                if key == "anomalies":
+                    # Handle anomalies separately
+                    existing.anomalies_detected = "true" if value.get("anomalies_detected") else "false"
+                    import json
+                    existing.anomaly_types = json.dumps(value.get("anomaly_types", []))
+                    existing.severity = value.get("severity", "LOW")
+                    existing.anomaly_details = value.get("details", "")
+                elif key == "timestamp":
+                    existing.timestamp = value
+                elif hasattr(existing, key):
+                    setattr(existing, key, value)
+            review = existing
+        else:
+            # Create new review
+            review = AMLReview.from_dict(review_data)
+            db.add(review)
+        
+        db.commit()
+        db.refresh(review)
+    
+    return review.to_dict()

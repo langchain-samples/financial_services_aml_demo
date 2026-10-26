@@ -6,6 +6,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, END
 from langsmith import traceable
 
+from utils.trace_context import get_trace_context
+
 from agents.prompts import (
     KYC_DOCUMENT_EXTRACTION_PROMPT,
     KYC_RISK_ASSESSMENT_PROMPT,
@@ -200,7 +202,10 @@ class KYCAgentGraph:
         workflow.add_edge("assess_risk", "make_decision")
         workflow.add_edge("make_decision", END)
 
-        return workflow.compile()
+        # Tag every trace with agent + revision_id for LangSmith Engine and Insights
+        return workflow.compile().with_config(
+            {"metadata": get_trace_context("kyc_onboarding")}
+        )
 
 
 # Create graph instance for LangGraph Studio

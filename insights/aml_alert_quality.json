@@ -1,0 +1,9 @@
+{
+  "name": "AML alert quality - weekly",
+  "description": "Clusters AML transaction monitoring runs by typology and outcome to surface missed detections, over-alerting, and weak justifications.",
+  "summary_prompt": "You are reviewing an AML transaction monitoring agent at a bank. Summarize this run in 2-3 sentences: the transaction typology (e.g. sanctions exposure, structuring, large/unusual amount, high frequency, normal activity), the severity and risk score the agent assigned, whether the alert justification cites concrete evidence, and the human reviewer action if any. Call out anything that looks like a missed red flag or an over-alert on legitimate activity.\n\nTransaction and customer history:\n{{run.inputs}}\n\nAgent output (pattern analysis, sanctions check, anomalies, alert, review action):\n{{run.outputs}}\n\nError (if any):\n{{run.error}}\n\nFeedback scores:\n{{run.feedback}}",
+  "last_n_hours": 168,
+  "filter": "and(eq(is_root, true), eq(metadata_key, \"agent\"), eq(metadata_value, \"aml_transaction_monitoring\"))",
+  "model": "openai",
+  "schedule_cron": "0 9 * * 1"
+}

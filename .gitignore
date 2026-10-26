@@ -26,9 +26,18 @@ env/
 ENV/
 .venv
 
-# Environment variables
+# Environment variables and secrets
 .env
-.env.local
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+credentials.json
+token.json
+
+# LangGraph dev server local state (threads, checkpoints)
+.langgraph_api/
 
 # IDE
 .vscode/
@@ -48,3 +57,8 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3

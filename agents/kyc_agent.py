@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Literal
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langsmith import traceable
+from utils.trace_context import get_trace_context
 from pydantic import BaseModel, Field
 
 from .prompts import (
@@ -197,7 +198,7 @@ class KYCAgent:
             },
         )
 
-    @traceable(name="process_kyc_onboarding", project_name="financial_services_deep_agent_demo")
+    @traceable(name="process_kyc_onboarding", project_name="financial_services_deep_agent_demo", metadata=get_trace_context("kyc_onboarding"))
     def process_onboarding(self, customer_id: str, documents: Dict[str, str]) -> KYCDecision:
         """Process complete KYC onboarding workflow."""
         # Step 1: Extract document information

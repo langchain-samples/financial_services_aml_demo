@@ -1,0 +1,9 @@
+{
+  "name": "KYC onboarding outcomes - weekly",
+  "description": "Groups KYC onboarding runs by customer risk profile and decision to find inconsistent risk ratings and unnecessary manual reviews.",
+  "summary_prompt": "You are reviewing a KYC onboarding agent at a bank. Summarize this run in 2-3 sentences: the customer profile (nationality, occupation, source of funds), any watchlist matches, the risk level assigned, and the final decision (APPROVE, REJECT, or MANUAL_REVIEW). Note if the decision seems inconsistent with the risk factors or if information needed for due diligence was missing.\n\nCustomer submission:\n{{run.inputs}}\n\nAgent output:\n{{run.outputs}}\n\nError (if any):\n{{run.error}}",
+  "last_n_hours": 168,
+  "filter": "and(eq(is_root, true), eq(metadata_key, \"agent\"), eq(metadata_value, \"kyc_onboarding\"))",
+  "model": "openai",
+  "schedule_cron": "0 9 * * 1"
+}

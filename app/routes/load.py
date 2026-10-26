@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Query
 from langsmith import traceable
+from utils.trace_context import get_trace_context
 
 from app.models import (
     LoadCustomersRequest,
@@ -63,7 +64,7 @@ async def process_transaction_async(transaction, aml_agent_instance):
 
 
 @router.post("/customers", response_model=LoadCustomersResponse)
-@traceable(name="load_customers_endpoint", project_name="financial_services_deep_agent_demo")
+@traceable(name="load_customers_endpoint", project_name="financial_services_deep_agent_demo", metadata=get_trace_context("kyc_onboarding"))
 async def generate_customer_load(
     request: LoadCustomersRequest,
     background_tasks: BackgroundTasks,
@@ -96,7 +97,7 @@ async def generate_customer_load(
 
 
 @router.post("/transactions", response_model=LoadTransactionsResponse)
-@traceable(name="load_transactions_endpoint", project_name="financial_services_deep_agent_demo")
+@traceable(name="load_transactions_endpoint", project_name="financial_services_deep_agent_demo", metadata=get_trace_context("aml_transaction_monitoring"))
 async def generate_transaction_load(
     request: LoadTransactionsRequest,
     background_tasks: BackgroundTasks,
@@ -129,7 +130,7 @@ async def generate_transaction_load(
 
 
 @router.post("/transactions/anomalies", response_model=LoadTransactionsResponse)
-@traceable(name="load_anomaly_transactions_endpoint", project_name="financial_services_deep_agent_demo")
+@traceable(name="load_anomaly_transactions_endpoint", project_name="financial_services_deep_agent_demo", metadata=get_trace_context("aml_transaction_monitoring"))
 async def generate_anomaly_transaction_load(
     anomaly_type: str = Query("sanctions", description="Type of anomaly: sanctions, structuring, large_amount, high_risk_jurisdiction"),
     customer_id: str = Query(None, description="Customer ID (auto-generated if not provided)"),

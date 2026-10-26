@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, HTTPException
 from langsmith import traceable
+from utils.trace_context import get_trace_context
 
 from app.models import AMLAnalyzeRequest, AMLAnalyzeResponse
 from agents.aml_agent import AMLAgent
@@ -15,7 +16,7 @@ aml_agent = AMLAgent(project_name=get_aml_project_name())
 
 
 @router.post("/analyze", response_model=AMLAnalyzeResponse)
-@traceable(name="aml_analyze_endpoint", project_name="financial_services_deep_agent_demo")
+@traceable(name="aml_analyze_endpoint", project_name="financial_services_deep_agent_demo", metadata=get_trace_context("aml_transaction_monitoring"))
 async def analyze_transaction(request: AMLAnalyzeRequest) -> AMLAnalyzeResponse:
     """Analyze transaction for suspicious activity."""
     try:

@@ -2,7 +2,8 @@
   "dockerfile_lines": [],
   "graphs": {
     "KYC Onboarding Agent": "./graphs/kyc_graph.py:graph",
-    "AML Transaction Monitoring": "./graphs/aml_graph.py:graph"
+    "AML Transaction Monitoring": "./graphs/aml_graph.py:graph",
+    "Compliance Summarization Assistant": "./graphs/summarization_assistant.py:graph"
   },
   "env": ".env",
   "dependencies": [

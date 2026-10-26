@@ -6,6 +6,7 @@ from datetime import datetime
 
 from app.models import HealthResponse
 from app.routes import kyc, aml, load
+from app.database import init_db
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -13,6 +14,12 @@ app = FastAPI(
     description="Demo showcasing LangSmith integration for AML and KYC processes",
     version="0.1.0",
 )
+
+# Initialize database on startup
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database tables on application startup."""
+    init_db()
 
 # CORS middleware
 app.add_middleware(

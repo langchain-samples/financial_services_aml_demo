@@ -5,6 +5,7 @@ from datetime import datetime
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langsmith import traceable
+from utils.trace_context import get_trace_context
 from pydantic import BaseModel, Field
 
 from .prompts import (
@@ -244,7 +245,7 @@ class AMLAgent:
             justification=f"Risk score: {risk_score}. Indicators: {', '.join(indicators)}",
         )
 
-    @traceable(name="analyze_transaction", project_name="financial_services_deep_agent_demo")
+    @traceable(name="analyze_transaction", project_name="financial_services_deep_agent_demo", metadata=get_trace_context("aml_transaction_monitoring"))
     def analyze_transaction(self, transaction: Transaction) -> Optional[Alert]:
         """Complete AML transaction analysis workflow."""
         # Get customer transaction history

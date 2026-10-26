@@ -13,6 +13,9 @@ flowchart TB
     LangSmith --> Tracing[Tracing & Observability]
     LangSmith --> Eval[Evaluation & Testing]
     LangSmith --> Monitor[Monitoring & Dashboards]
+    LangSmith --> Engine[Engine<br/>Issues, Fix PRs, Eval Examples]
+    LangSmith --> Insights[Insights<br/>Usage & Failure Clusters]
+    Engine -.draft PRs.-> Repo[GitHub Repo]
     
     KYC --> KYCWorkflow[Customer Onboarding<br/>Identity Verification<br/>Risk Assessment]
     AML --> AMLWorkflow[Transaction Analysis<br/>Suspicious Activity Detection<br/>Alert Generation]
@@ -23,7 +26,10 @@ flowchart TB
 - **KYC Agent**: Customer onboarding with document processing, identity verification, and risk assessment
 - **AML Agent**: Transaction monitoring with pattern analysis, sanctions checking, and alert generation
 - **Load Generation**: Synthetic customer and transaction data generation for testing and demos
+- **Persistent Data Layer**: SQLite database for storing all AML reviews (pending, approved, rejected, escalated)
 - **LangSmith Integration**: Full tracing, evaluation, and monitoring capabilities
+- **LangSmith Engine**: Watches production traces, groups recurring failures into issues, and opens draft fix PRs against this repo ([engine/](engine/README.md))
+- **LangSmith Insights**: Scheduled reports that cluster AML, KYC, and assistant traces, plus an SDK report over analyst review decisions ([insights/](insights/README.md))
 - **LangGraph Studio**: Visual development and debugging environment for agent workflows
 - **FastAPI Application**: RESTful API for all operations
 
@@ -52,15 +58,26 @@ deep_agent_finance_demo/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py               # FastAPI application
+│   ├── database.py           # Database connection and session management
+│   ├── models_db.py          # SQLAlchemy database models
 │   ├── routes/
 │   │   ├── __init__.py
 │   │   ├── kyc.py            # KYC endpoints
 │   │   ├── aml.py            # AML endpoints
-│   │   └── load.py           # Load generation endpoints
+│   │   ├── load.py           # Load generation endpoints
+│   │   └── reviews.py        # AML review management endpoints
 │   └── models.py             # Pydantic models
+├── engine/
+│   ├── README.md             # LangSmith Engine setup + demo flow
+│   └── AGENT_OVERVIEW.md     # Context to give Engine about these agents
+├── insights/
+│   ├── README.md             # LangSmith Insights usage
+│   ├── *.json                # Saved Insights report configs (CLI)
+│   └── generate_review_insights.py # SDK report over analyst decisions
 ├── utils/
 │   ├── __init__.py
 │   ├── langsmith_setup.py    # LangSmith configuration
+│   ├── trace_context.py      # agent + revision_id trace metadata
 │   └── evaluators.py         # Custom evaluators
 └── tests/
     └── test_agents.py
@@ -82,6 +99,8 @@ deep_agent_finance_demo/
    ```bash
    uv pip install -r requirements.txt
    ```
+   
+   **Note**: The database (SQLite) will be automatically created on first run. The database file `aml_reviews.db` will be created in the project root directory.
 
 3. **Set up environment variables**:
    Create a `.env` file in the project root:
@@ -99,6 +118,18 @@ deep_agent_finance_demo/
    
    **Note**: All traces (KYC and AML) will be sent to the `financial_services_deep_agent_demo` project in LangSmith.
 
+   Optionally set `REVISION_ID=<git sha or release tag>` in environments without a `.git` directory, such as Docker or LangGraph Platform. Every trace is tagged with `revision_id`, which defaults to the current git SHA, so LangSmith Engine can link regressions to the commit that caused them.
+
+4. **Database Setup**:
+   The application uses SQLite by default (stored in `aml_reviews.db`). The database is automatically initialized when you start the FastAPI server.
+   
+   To use PostgreSQL or another database, set the `DATABASE_URL` environment variable:
+   ```env
+   DATABASE_URL=postgresql://user:password@localhost/aml_reviews
+   ```
+   
+   The database stores all AML reviews with their status (pending, approved, rejected, escalated) and maintains a complete audit trail.
+
 ## Frontend Interface
 
 This project includes a web-based frontend for managing AML transaction reviews using the deep-agents-ui.
@@ -112,7 +143,7 @@ This project includes a web-based frontend for managing AML transaction reviews 
 
 2. **Start the frontend** (in a new terminal):
    ```bash
-   cd ../deep-agents-ui
+   cd deep-agents-ui
    yarn install
    yarn dev
    ```
@@ -152,6 +183,7 @@ The following graphs are available in LangGraph Studio:
 
 - **KYC Onboarding Agent**: Complete KYC workflow with document extraction, watchlist checking, risk assessment, and decision making
 - **AML Transaction Monitoring**: Transaction analysis workflow with pattern detection, sanctions checking, anomaly detection, and alert generation
+- **Compliance Summarization Assistant**: Chat assistant for summarizing AML reviews, compliance data, and answering questions (see [SUMMARIZATION_ASSISTANT.md](SUMMARIZATION_ASSISTANT.md))
 
 ### Using LangGraph Studio
 
@@ -288,7 +320,31 @@ curl -X POST http://localhost:8000/load/transactions \
 2. Select the `financial_services_deep_agent_demo` project
 3. View real-time traces of all agent operations (KYC and AML)
 4. Analyze performance metrics, costs, and decision-making processes
-5. Filter by agent type using tags or metadata if needed
+5. Filter by agent using the `agent` metadata key (`kyc_onboarding`, `aml_transaction_monitoring`, `compliance_summarization_assistant`, `aml_review_actions`) and by release using `revision_id`
+
+### LangSmith Engine
+
+[Engine](https://docs.langchain.com/langsmith/engine-overview) is an agent that watches this project's traces and:
+- Groups recurring failures (evaluator failures, tool errors, latency spikes, negative feedback) into ranked **issues**
+- Diagnoses the root cause against this repo and opens a **draft PR** with a code or prompt fix
+- Adds the failing traces to a **dataset** for offline evals, and reopens the issue if it comes back
+
+The repo already gives Engine what it needs: `revision_id` and `agent` metadata on every trace, feedback from online evaluators and annotation queues, and a ready-to-paste [Agent Overview](engine/AGENT_OVERVIEW.md). To enable it, go to **Settings → Engine**, then open **Engine** in the sidebar and select the project. See [engine/README.md](engine/README.md) for setup and a demo walkthrough.
+
+### LangSmith Insights
+
+[Insights](https://docs.langchain.com/langsmith/insights) clusters traces to show how the agents are used and where they fail. It requires a Plus or Enterprise plan.
+
+```bash
+# Weekly report on AML alert quality (LangSmith CLI v0.2.60+)
+langsmith insights create --project financial_services_deep_agent_demo \
+  --config insights/aml_alert_quality.json --wait
+
+# Cluster analyst approve/reject/escalate decisions stored in SQLite (Python SDK)
+python -m insights.generate_review_insights --wait
+```
+
+See [insights/README.md](insights/README.md) for all report configs.
 
 ### Running Evaluations
 
@@ -347,6 +403,8 @@ All operations are traced with performance metrics and alert classifications.
 - **Monitoring**: Real-time dashboards for performance and cost tracking
 - **Feedback**: Human-in-the-loop capabilities for high-risk cases
 - **Experiments**: A/B testing different agent configurations
+- **Engine**: Automatic issue detection, root-cause diagnosis, draft fix PRs, and eval examples generated from production traces
+- **Insights**: Scheduled clustering of agent traces and SDK reports over data that lives outside LangSmith
 
 ## Testing
 

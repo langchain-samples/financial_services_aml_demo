@@ -1,0 +1,9 @@
+{
+  "name": "Compliance assistant usage - daily",
+  "description": "Discovers what compliance analysts ask the summarization assistant and where it fails to answer.",
+  "summary_prompt": "You are reviewing a chat assistant used by AML compliance analysts. Summarize the conversation in 1-2 sentences: what the analyst was trying to accomplish (e.g. pending review triage, customer risk lookup, escalation summary, regulatory question) and whether the assistant fully answered it using its tools. Flag hallucinated figures, refusals, or tool errors.\n\nConversation:\n{{run.inputs}}\n\nAssistant response:\n{{run.outputs}}\n\nError (if any):\n{{run.error}}",
+  "last_n_hours": 24,
+  "filter": "and(eq(is_root, true), eq(metadata_key, \"agent\"), eq(metadata_value, \"compliance_summarization_assistant\"))",
+  "model": "openai",
+  "schedule_cron": "0 8 * * *"
+}

@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, HTTPException
 from langsmith import traceable
+from utils.trace_context import get_trace_context
 
 from app.models import KYCOnboardRequest, KYCOnboardResponse
 from agents.kyc_agent import KYCAgent
@@ -14,7 +15,7 @@ kyc_agent = KYCAgent(project_name=get_kyc_project_name())
 
 
 @router.post("/onboard", response_model=KYCOnboardResponse)
-@traceable(name="kyc_onboard_endpoint", project_name="financial_services_deep_agent_demo")
+@traceable(name="kyc_onboard_endpoint", project_name="financial_services_deep_agent_demo", metadata=get_trace_context("kyc_onboarding"))
 async def onboard_customer(request: KYCOnboardRequest) -> KYCOnboardResponse:
     """Process customer onboarding through KYC workflow."""
     try:

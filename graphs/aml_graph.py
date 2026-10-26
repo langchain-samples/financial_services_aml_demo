@@ -8,6 +8,9 @@ from langgraph.graph import StateGraph, END
 from langgraph.types import interrupt
 from langsmith import traceable
 
+from utils.trace_context import get_trace_context
+#from summarization_assistant import Graph as SummarizationGraph
+
 from agents.prompts import (
     AML_TRANSACTION_ANALYSIS_PROMPT,
     AML_ALERT_GENERATION_PROMPT,
@@ -403,7 +406,10 @@ Please review this transaction and provide your decision:
         # Note: For local Python execution outside Studio, you may want to add:
         #   from langgraph.checkpoint.memory import MemorySaver
         #   return workflow.compile(checkpointer=MemorySaver())
-        return workflow.compile()
+        # Tag every trace with agent + revision_id for LangSmith Engine and Insights
+        return workflow.compile().with_config(
+            {"metadata": get_trace_context("aml_transaction_monitoring")}
+        )
 
 
 # Create graph instance for LangGraph Studio

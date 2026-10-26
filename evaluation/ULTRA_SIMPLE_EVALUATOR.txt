@@ -1,0 +1,11 @@
+# ULTRA SIMPLE EVALUATOR - GUARANTEED TO WORK
+# Copy EXACTLY as shown below (including the function name)
+
+from langsmith.schemas import Example, Run
+
+def evaluator(run: Run, example: Example) -> dict:
+    alert = run.outputs.get("alert") if run.outputs else None
+    expected = example.outputs.get("should_flag") if example.outputs else False
+    actual = alert is not None
+    score = 1.0 if actual == expected else 0.0
+    return {"key": "correctness", "score": score}
