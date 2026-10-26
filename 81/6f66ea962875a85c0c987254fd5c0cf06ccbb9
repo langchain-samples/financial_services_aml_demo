@@ -1,0 +1,258 @@
+app/routes/reviews.py
+  s_7e3f9e6d127c09::t_ec15d433154ce1 4,6,9-10,15-16,36,38-62,64-65,69-70,75,77-81,87,92-93,95-99,102,105-107,109,112,115,117-126,129,132,145,248-249,251-255,258,261-263,265,268,271-279,281-282,285,288,299,304-305,307-311,314,317-319,321,324,327,330,332-342,345,348,359,402-405,413,427-457
+graphs/kyc_graph.py
+  s_7e3f9e6d127c09::t_77fbb532e261f2 9-10,205-208
+app/routes/aml.py
+  s_7e3f9e6d127c09::t_ec15d433154ce1 5,19
+graphs/summarization_assistant.py
+  s_7e3f9e6d127c09::t_77fbb532e261f2 1-797
+insights/README.md
+  s_7e3f9e6d127c09::t_e99e1fcb901736 1-63
+README.md
+  s_7e3f9e6d127c09::t_1df608c8e6f7a5 323-347
+  s_7e3f9e6d127c09::t_a88cd3c095e990 31-32
+  s_7e3f9e6d127c09::t_937a9eacf50b26 121-122
+  s_7e3f9e6d127c09::t_dc70b6c77ad245 146
+  s_7e3f9e6d127c09::t_93f3826f4152b0 406-407
+  s_7e3f9e6d127c09::t_40f15f067a745b 70-76,80
+  s_7e3f9e6d127c09::t_f73e22ba4a68d2 16-18
+  s_7e3f9e6d127c09::t_7b3c098469bc24 29,61-62,67-68,102-103,123-132,186
+app/routes/kyc.py
+  s_7e3f9e6d127c09::t_ec15d433154ce1 5,18
+insights/generate_review_insights.py
+  s_7e3f9e6d127c09::t_adab780aeb7f8e 1-104
+pyproject.toml
+  s_7e3f9e6d127c09::t_77fbb532e261f2 2,14,21-22,29-30
+  s_7e3f9e6d127c09::t_fa7062425957e6 31
+insights/aml_alert_quality.json
+  s_7e3f9e6d127c09::t_f89a35f598565e 1-9
+app/routes/load.py
+  s_7e3f9e6d127c09::t_ec15d433154ce1 5,67,100,133
+graphs/aml_graph.py
+  s_7e3f9e6d127c09::t_77fbb532e261f2 11-13,409-412
+agents/kyc_agent.py
+  s_7e3f9e6d127c09::t_ec15d433154ce1 7,201
+utils/trace_context.py
+  s_7e3f9e6d127c09::t_f7ca67721a5bc2 1-46
+agents/aml_agent.py
+  s_7e3f9e6d127c09::t_ec15d433154ce1 8,248
+.gitignore
+  s_7e3f9e6d127c09::t_5094d2f5f6ec58 29,31-40
+  s_7e3f9e6d127c09::t_9da0504ddddf3e 60-64
+insights/kyc_onboarding_outcomes.json
+  s_7e3f9e6d127c09::t_f89a35f598565e 1-9
+engine/AGENT_OVERVIEW.md
+  s_7e3f9e6d127c09::t_3524967c3d14f5 33,35,41-42
+  s_7e3f9e6d127c09::t_a51905790f3d5d 17-19
+  s_7e3f9e6d127c09::t_53fa6c70208aaf 1-16,20-32,34,36-40,43-50
+engine/README.md
+  s_7e3f9e6d127c09::t_c280496ad339f1 1-21,23-66
+  s_7e3f9e6d127c09::t_d0145af2afff83 22
+insights/compliance_assistant_usage.json
+  s_7e3f9e6d127c09::t_f89a35f598565e 1-9
+requirements.txt
+  s_7e3f9e6d127c09::t_1e4b55e5fa596a 8
+EVALUATION_SUMMARY.md
+  s_7e3f9e6d127c09::t_b59093644b96d3 1-423
+app/database.py
+  s_7e3f9e6d127c09::t_74a8364c56a43e 1-61
+app/main.py
+  s_7e3f9e6d127c09::t_0da3b50be5383f 9,18-23
+app/models_db.py
+  s_7e3f9e6d127c09::t_557560b4ca433f 1-128
+deep-agents-ui/.github/workflows/ci.yml
+  s_7e3f9e6d127c09::t_31ce727e46389e 1-91
+deep-agents-ui/.github/workflows/pr_lint.yml
+  s_7e3f9e6d127c09::t_c47c4477c1202a 1-40
+deep-agents-ui/.gitignore
+  s_7e3f9e6d127c09::t_4a66e532ae610c 1-41
+deep-agents-ui/.nvmrc
+  s_7e3f9e6d127c09::t_5dd968098e2f53 1-2
+deep-agents-ui/.prettierignore
+  s_7e3f9e6d127c09::t_ae6ff59c5fd3b6 1-31
+deep-agents-ui/LICENSE
+  s_7e3f9e6d127c09::t_58bc9e56fd5a9d 1-21
+deep-agents-ui/README.md
+  s_7e3f9e6d127c09::t_8e5f73a5b7932f 1-93
+deep-agents-ui/components.json
+  s_7e3f9e6d127c09::t_0274fcb1ea79b6 1-20
+deep-agents-ui/eslint.config.js
+  s_7e3f9e6d127c09::t_4307a43ef4501d 1-33
+deep-agents-ui/next.config.ts
+  s_7e3f9e6d127c09::t_88ee6c000f28dc 1-7
+deep-agents-ui/package.json
+  s_7e3f9e6d127c09::t_10cf0bd43e073f 1-77
+deep-agents-ui/postcss.config.cjs
+  s_7e3f9e6d127c09::t_c45f9d8363e058 1-7
+deep-agents-ui/prettier.config.cjs
+  s_7e3f9e6d127c09::t_fc0b4eb2bb9ba2 1-11
+deep-agents-ui/public/file.svg
+  s_7e3f9e6d127c09::t_bfa05f51f6cd63 1
+deep-agents-ui/public/globe.svg
+  s_7e3f9e6d127c09::t_c2295dd686fd34 1
+deep-agents-ui/public/next.svg
+  s_7e3f9e6d127c09::t_31751186d8e602 1
+deep-agents-ui/public/vercel.svg
+  s_7e3f9e6d127c09::t_56653608785c96 1
+deep-agents-ui/public/window.svg
+  s_7e3f9e6d127c09::t_6948a0c70fb3bb 1
+deep-agents-ui/src/app/aml-reviews/page.tsx
+  s_7e3f9e6d127c09::t_7cb7bed78a22de 1-190
+deep-agents-ui/src/app/components/AMLFilters.tsx
+  s_7e3f9e6d127c09::t_1ccafee353893b 1-91
+deep-agents-ui/src/app/components/AMLReviewCard.tsx
+  s_7e3f9e6d127c09::t_856ad25e4d30cf 1-204
+deep-agents-ui/src/app/components/ChatInterface.tsx
+  s_7e3f9e6d127c09::t_3e588bf6316b07 1-545
+deep-agents-ui/src/app/components/ChatMessage.tsx
+  s_7e3f9e6d127c09::t_5d8325bfabe435 1-200
+deep-agents-ui/src/app/components/ConfigDialog.tsx
+  s_7e3f9e6d127c09::t_d4460b6bbb7d1d 1-120
+deep-agents-ui/src/app/components/FileViewDialog.tsx
+  s_7e3f9e6d127c09::t_a7137d3ecdfde5 1-296
+deep-agents-ui/src/app/components/MarkdownContent.tsx
+  s_7e3f9e6d127c09::t_4d6bb1f026cf8b 1-135
+deep-agents-ui/src/app/components/SubAgentIndicator.tsx
+  s_7e3f9e6d127c09::t_ea985cc6768919 1-48
+deep-agents-ui/src/app/components/TasksFilesSidebar.tsx
+  s_7e3f9e6d127c09::t_67ec87b9122d64 1-266
+deep-agents-ui/src/app/components/ThreadList.tsx
+  s_7e3f9e6d127c09::t_bc7abc323ef1b4 1-369
+deep-agents-ui/src/app/components/ToolApprovalInterrupt.tsx
+  s_7e3f9e6d127c09::t_59c2c521cc6280 1-287
+deep-agents-ui/src/app/components/ToolCallBox.tsx
+  s_7e3f9e6d127c09::t_3ae38198957e32 1-230
+deep-agents-ui/src/app/globals.css
+  s_7e3f9e6d127c09::t_ec4cd0de303fbc 1-395
+deep-agents-ui/src/app/hooks/useAMLReviews.ts
+  s_7e3f9e6d127c09::t_45cfdfedef7a5f 1-132
+deep-agents-ui/src/app/hooks/useChat.ts
+  s_7e3f9e6d127c09::t_7bc3c4cca34a61 1-166
+deep-agents-ui/src/app/hooks/useThreads.ts
+  s_7e3f9e6d127c09::t_536aef24e2a151 1-136
+deep-agents-ui/src/app/page.tsx
+  s_7e3f9e6d127c09::t_11fd6bc106d168 1-304
+deep-agents-ui/src/app/types/types.ts
+  s_7e3f9e6d127c09::t_998385d235132b 1-57
+deep-agents-ui/src/app/utils/utils.ts
+  s_7e3f9e6d127c09::t_f60694b7b0c69e 1-157
+deep-agents-ui/src/components/ui/alert.tsx
+  s_7e3f9e6d127c09::t_6663752fa3d30a 1-58
+deep-agents-ui/src/components/ui/badge.tsx
+  s_7e3f9e6d127c09::t_ead3484fd4dea5 1-35
+deep-agents-ui/src/components/ui/button.tsx
+  s_7e3f9e6d127c09::t_dbbbf8d7c0164f 1-59
+deep-agents-ui/src/components/ui/card.tsx
+  s_7e3f9e6d127c09::t_8cf97ee65ab82d 1-70
+deep-agents-ui/src/components/ui/dialog.tsx
+  s_7e3f9e6d127c09::t_5ea92b6377f046 1-163
+deep-agents-ui/src/components/ui/input.tsx
+  s_7e3f9e6d127c09::t_2621d669653733 1-21
+deep-agents-ui/src/components/ui/label.tsx
+  s_7e3f9e6d127c09::t_547f43ffceb46f 1-26
+deep-agents-ui/src/components/ui/resizable.tsx
+  s_7e3f9e6d127c09::t_cea658e866f068 1-45
+deep-agents-ui/src/components/ui/scroll-area.tsx
+  s_7e3f9e6d127c09::t_08604bce52d225 1-58
+deep-agents-ui/src/components/ui/select.tsx
+  s_7e3f9e6d127c09::t_ef017add19962e 1-160
+deep-agents-ui/src/components/ui/skeleton.tsx
+  s_7e3f9e6d127c09::t_fcafa745b543df 1-15
+deep-agents-ui/src/components/ui/switch.tsx
+  s_7e3f9e6d127c09::t_8f22700d458412 1-55
+deep-agents-ui/src/components/ui/tabs.tsx
+  s_7e3f9e6d127c09::t_2828e00f1931be 1-66
+deep-agents-ui/src/components/ui/textarea.tsx
+  s_7e3f9e6d127c09::t_24363beb907c60 1-23
+deep-agents-ui/src/components/ui/tooltip-icon-button.tsx
+  s_7e3f9e6d127c09::t_82973b8ab6c4f9 1-42
+deep-agents-ui/src/components/ui/tooltip.tsx
+  s_7e3f9e6d127c09::t_5c8dd016bb5236 1-69
+deep-agents-ui/src/providers/ChatProvider.tsx
+  s_7e3f9e6d127c09::t_7179f2b235a2e7 1-37
+deep-agents-ui/src/providers/ClientProvider.tsx
+  s_7e3f9e6d127c09::t_16a8a227a77155 1-47
+deep-agents-ui/tailwind.config.mjs
+  s_7e3f9e6d127c09::t_a6ed4bc57ab64e 1-488
+deep-agents-ui/tsconfig.json
+  s_7e3f9e6d127c09::t_f2afe2b8cd2ccb 1-41
+evaluation/COMPLETE_LLM_JUDGE_SETUP.md
+  s_7e3f9e6d127c09::t_88fd746a5a6cda 1-441
+evaluation/DEMO_SCRIPT.md
+  s_7e3f9e6d127c09::t_2b6a3a2bdc92ce 1-239
+evaluation/FIXED_ONLINE_LLM_JUDGE_PROMPT.md
+  s_7e3f9e6d127c09::t_0fc34e9c64505f 1-300
+evaluation/LANGSMITH_LLM_JUDGE_CORRECT_SETUP.md
+  s_7e3f9e6d127c09::t_0bd2baa30e2e0b 1-426
+evaluation/LANGSMITH_LLM_JUDGE_SETUP.md
+  s_7e3f9e6d127c09::t_30c06650bc0e31 1-69
+evaluation/LANGSMITH_UI_ONLINE_EVAL.md
+  s_7e3f9e6d127c09::t_7147ab73e42bd1 1-532
+evaluation/LLM_JUDGE_CONFIDENCE_SCORING.md
+  s_7e3f9e6d127c09::t_31ced417102371 1-383
+evaluation/ONLINE_EVALUATION_GUIDE.md
+  s_7e3f9e6d127c09::t_c93d3ecd36c7dc 1-538
+evaluation/ONLINE_LLM_JUDGE_SETUP.md
+  s_7e3f9e6d127c09::t_62f389862e66d3 1-496
+evaluation/ONLINE_LLM_JUDGE_WITH_VISIBLE_REASONING.md
+  s_7e3f9e6d127c09::t_4873ccced07cbd 1-301
+evaluation/QUICKSTART.md
+  s_7e3f9e6d127c09::t_da9b719ae67737 1-258
+evaluation/README.md
+  s_7e3f9e6d127c09::t_0327c28de1a862 1-358
+evaluation/SIMPLE_UI_EVALUATOR.md
+  s_7e3f9e6d127c09::t_a5de4bced4e2d5 1-142
+evaluation/UI_ANNOTATION_QUEUE_GUIDE.md
+  s_7e3f9e6d127c09::t_f4787fd3798de7 1-265
+evaluation/UI_EVALUATOR_GUIDE.md
+  s_7e3f9e6d127c09::t_e7019c7cd4ac9c 1-257
+evaluation/UI_ONLINE_EVALUATOR_FIXED.md
+  s_7e3f9e6d127c09::t_22ae8266119eeb 1-334
+evaluation/ULTRA_SIMPLE_EVALUATOR.txt
+  s_7e3f9e6d127c09::t_b1caceb6527e72 1-11
+evaluation/__init__.py
+  s_7e3f9e6d127c09::t_554bdc13c0988d 1-40
+evaluation/aml_evaluator.py
+  s_7e3f9e6d127c09::t_13050b75329a34 1-306
+evaluation/example_usage.py
+  s_7e3f9e6d127c09::t_4faa08f618b748 1-299
+evaluation/llm_judge_evaluator.py
+  s_7e3f9e6d127c09::t_73513da2220cb3 1-359
+evaluation/offline_evaluation_with_queue.py
+  s_7e3f9e6d127c09::t_72a637102470d1 1-383
+evaluation/online_evaluation.py
+  s_7e3f9e6d127c09::t_2bf5c7221afce7 1-527
+evaluation/run_evaluation.py
+  s_7e3f9e6d127c09::t_1ffe86f7c979ae 1-392
+evaluation/run_langsmith_evaluation.py
+  s_7e3f9e6d127c09::t_416dac0ccc55d8 1-330
+evaluation/test_dataset.py
+  s_7e3f9e6d127c09::t_999c5d07ae4e23 1-550
+evaluation/test_evaluator.py
+  s_7e3f9e6d127c09::t_0e68261682d485 1-382
+evaluation/ui_evaluators.py
+  s_7e3f9e6d127c09::t_b1b05b2b3b0bdd 1-163
+langgraph.json
+  s_7e3f9e6d127c09::t_ad39b5b8c7fc44 5-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "816f66ea962875a85c0c987254fd5c0cf06ccbb9",
+  "prompts": {},
+  "humans": {
+    "h_c42507586cfcb5": {
+      "author": "Eric Johanson <eric.johanson@langchain.dev>"
+    }
+  },
+  "sessions": {
+    "s_7e3f9e6d127c09": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bcf6e4b0-b809-45e2-b223-ce1b359684e1",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Eric Johanson <eric.johanson@langchain.dev>"
+    }
+  }
+}
